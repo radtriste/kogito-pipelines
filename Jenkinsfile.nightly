@@ -24,9 +24,7 @@ UNSTABLE_STAGES=[:]
 
 // Should be multibranch pipeline
 pipeline {
-    agent {
-        label 'kie-rhel7 && !master'
-    }
+    agent any
 
     options {
         timeout(time: 720, unit: 'MINUTES')
@@ -272,15 +270,15 @@ pipeline {
 def buildJob(String jobName, List buildParams, boolean propagate=true) {
     echo "Build ${jobName} with params ${buildParams} and propagate = ${propagate}"
 
-    def job = build(job: "${jobName}", wait: true, parameters: buildParams, propagate: propagate)
-    JOBS[jobName] = job
+    // def job = build(job: "${jobName}", wait: true, parameters: buildParams, propagate: propagate)
+    // JOBS[jobName] = job
 
-    // Set Unstable if we don't propagate and job failed
-    if(!propagate && !isJobSucceeded(jobName)){
-        addUnstableStage(jobName)
-        unstable("Job ${jobName} finished with result ${job.getResult()}")
-    }
-    return job
+    // // Set Unstable if we don't propagate and job failed
+    // if(!propagate && !isJobSucceeded(jobName)){
+    //     addUnstableStage(jobName)
+    //     unstable("Job ${jobName} finished with result ${job.getResult()}")
+    // }
+    // return job
 }
 
 def getJob(String jobName) {
