@@ -1,4 +1,5 @@
 import org.jenkinsci.plugins.workflow.libs.Library
+
 @Library('jenkins-pipeline-shared-libraries')_
 
 changeAuthor = env.ghprbPullAuthorLogin ?: CHANGE_AUTHOR
@@ -18,8 +19,8 @@ OPTAPLANNER_DEPLOY = 'optaplanner-deploy'
 // for more options on built job entity
 JOBS = [:]
 
-FAILED_STAGES=[]
-UNSTABLE_STAGES=[]
+FAILED_STAGES = []
+UNSTABLE_STAGES = []
 
 // Should be multibranch pipeline
 pipeline {
@@ -27,19 +28,7 @@ pipeline {
         label 'kie-rhel7 && !master'
     }
 
-    options {
-        buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '10')
-    }
-
     environment {
-        MAVEN_SETTINGS_CONFIG_FILE_ID = 'kogito_release_settings'
-        PR_CHECK_MAVEN_REPO = credentials('PR_CHECK_MAVEN_REPOSITORY')
-        MAVEN_REPO_CREDS_ID = 'unpacks-zip-on-qa-nexus'
-
-        // We use quay as temporary registry for testing between the jobs instead of Openshift, due to https://issues.redhat.com/browse/KOGITO-2219
-        IMAGE_REGISTRY_CREDENTIALS = 'nightly_kogito'
-        IMAGE_REGISTRY = 'quay.io'
-        IMAGE_NAMESPACE = 'kiegroup'
         IMAGE_NAME_SUFFIX = "${getPRRepoName()}-pr-${changeId}-bdd-tests"
         BUILD_NAME = "${getPRRepoName()}-pr-${changeId}-bdd-tests"
         TEMP_TAG = "temp-${env.BUILD_NAME}"
@@ -63,10 +52,7 @@ pipeline {
                     echo "Call ${RUNTIMES_DEPLOY} job"
                     def buildParams = getDefaultBuildParams()
                     addAuthorBranchParamsIfExist(buildParams, 'kogito-runtimes')
-                    addMavenSettingsParam(buildParams)
-                    addArtifactsRepositoriesParam(buildParams)
-                    
-                    // images and operator deploy testing will use older working artifacts if that one fails
+
                     buildJob(RUNTIMES_DEPLOY, buildParams, false)
                 }
             }
@@ -83,10 +69,8 @@ pipeline {
                     echo "Call ${OPTAPLANNER_DEPLOY} job"
                     def buildParams = getDefaultBuildParams()
                     def targetBranch = (changeTarget != 'master') ? getOptaPlannerBranch() : ''
-                    addMavenSettingsParam(buildParams)
                     addAuthorBranchParamsIfExist(buildParams, 'optaplanner', targetBranch)
                     addStringParam(buildParams, 'PR_TARGET_BRANCH', targetBranch)
-                    addArtifactsRepositoriesParam(buildParams)
 
                     buildJob(OPTAPLANNER_DEPLOY, buildParams, false)
                 }
@@ -103,11 +87,8 @@ pipeline {
                 script {
                     echo "Call ${APPS_DEPLOY} job"
                     def buildParams = getDefaultBuildParams()
-                    addMavenSettingsParam(buildParams)
                     addAuthorBranchParamsIfExist(buildParams, 'kogito-apps')
-                    addArtifactsRepositoriesParam(buildParams)
-                    
-                    // images and operator deploy testing will use older working artifacts if that one fails
+
                     buildJob(APPS_DEPLOY, buildParams, false)
                 }
             }
@@ -123,11 +104,8 @@ pipeline {
                 script {
                     echo "Call ${EXAMPLES_DEPLOY} job"
                     def buildParams = getDefaultBuildParams()
-                    addMavenSettingsParam(buildParams)
                     addAuthorBranchParamsIfExist(buildParams, 'kogito-examples')
-                    addArtifactsRepositoriesParam(buildParams)
-                    
-                    // images and operator deploy testing will use older working artifacts if that one fails
+
                     buildJob(EXAMPLES_DEPLOY, buildParams, false)
                 }
             }
@@ -147,7 +125,6 @@ pipeline {
                     addAuthorBranchParamsIfExist(buildParams, 'kogito-images')
                     addImageBuildParams(buildParams)
                     addExamplesParams(buildParams)
-                    addCloudRepositoriesParam(buildParams)
 
                     buildJob(IMAGES_DEPLOY, buildParams, false)
                 }
@@ -174,7 +151,6 @@ pipeline {
                     addStringParam(buildParams, 'KOGITO_IMAGES_NAME_SUFFIX', env.IMAGE_NAME_SUFFIX)
                     addStringParam(buildParams, 'KOGITO_IMAGES_TAG', env.TEMP_TAG)
                     addExamplesParams(buildParams)
-                    addCloudRepositoriesParam(buildParams)
 
                     buildJob(OPERATOR_DEPLOY, buildParams, false)
                 }
@@ -185,41 +161,40 @@ pipeline {
                 }
             }
         }
-
     }
 }
 
-def buildJob(String jobName, List buildParams, boolean propagate=true){
+def buildJob(String jobName, List buildParams, boolean propagate = true) {
     echo "Build ${jobName} with params ${buildParams} and propagate = ${propagate}"
 
     def job = build(job: "../${jobName}", wait: true, parameters: buildParams, propagate: propagate)
     JOBS[jobName] = job
 
     // Set Unstable if we don't propagate and job failed
-    if(!propagate && !isJobSucceeded(jobName)){
+    if (!propagate && !isJobSucceeded(jobName)) {
         addUnstableStage()
         unstable("Job ${jobName} finished with result ${job.getResult()}")
     }
     return job
 }
 
-def getJob(String jobName){
+def getJob(String jobName) {
     return JOBS[jobName]
 }
 
-boolean isJobSucceeded(String jobName){
+boolean isJobSucceeded(String jobName) {
     def job = getJob(jobName)
     return job ? job.getResult() == 'SUCCESS' : false
 }
 
-void addFailedStage(){
+void addFailedStage() {
     FAILED_STAGES.add("${STAGE_NAME}")
 }
-void addUnstableStage(){
+void addUnstableStage() {
     UNSTABLE_STAGES.add("${STAGE_NAME}")
 }
 
-List getDefaultBuildParams(){
+List getDefaultBuildParams() {
     List params = []
     addStringParam(params, 'DISPLAY_NAME', env.BUILD_NAME)
     return params
@@ -250,17 +225,7 @@ String getOptaPlannerBranch() {
     return "${optaplannerMajorVersion}.${changeTargetSplit[1]}.${changeTargetSplit[2]}"
 }
 
-void addArtifactsRepositoriesParam(List buildParams){
-    addStringParam(buildParams, 'MAVEN_DEPENDENCIES_REPOSITORY', getArtifactsRepositoryParam())
-    addStringParam(buildParams, 'MAVEN_DEPLOY_REPOSITORY', getArtifactsRepositoryParam())
-    addStringParam(buildParams, 'MAVEN_REPO_CREDS_ID', env.MAVEN_REPO_CREDS_ID)
-}
-
-void addCloudRepositoriesParam(buildParams){
-    addStringParam(buildParams, 'MAVEN_ARTIFACT_REPOSITORY', getArtifactsRepositoryParam())
-}
-
-void addExamplesParams(List buildParams){
+void addExamplesParams(List buildParams) {
     def author = ''
     def branch = ''
     if (doesBranchExist('kogito-examples', changeAuthor, changeBranch)) {
@@ -277,11 +242,7 @@ void addExamplesParams(List buildParams){
     addStringParam(buildParams, 'EXAMPLES_REF', branch)
 }
 
-void addMavenSettingsParam(List buildParams){
-    addStringParam(buildParams, 'MAVEN_SETTINGS_CONFIG_FILE_ID', env.MAVEN_SETTINGS_CONFIG_FILE_ID)
-}
-
-void addImageBuildParams(List buildParams){
+void addImageBuildParams(List buildParams) {
     addBooleanParam(buildParams, 'IMAGE_USE_OPENSHIFT_REGISTRY', true)
     addStringParam(buildParams, 'IMAGE_REGISTRY_CREDENTIALS', env.IMAGE_REGISTRY_CREDENTIALS)
     addStringParam(buildParams, 'IMAGE_REGISTRY', env.IMAGE_REGISTRY)
@@ -290,16 +251,12 @@ void addImageBuildParams(List buildParams){
     addStringParam(buildParams, 'IMAGE_TAG', env.TEMP_TAG)
 }
 
-void addStringParam(List params, String key, String value){
+void addStringParam(List params, String key, String value) {
     params.add(string(name: key, value: value))
 }
 
-void addBooleanParam(List params, String key, boolean value){
+void addBooleanParam(List params, String key, boolean value) {
     params.add(booleanParam(name: key, value: value))
-}
-
-String getArtifactsRepositoryParam(){
-    return env.PR_CHECK_MAVEN_REPO
 }
 
 String getPRRepoName() {
