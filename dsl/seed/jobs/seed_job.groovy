@@ -33,10 +33,10 @@ pipelineJob("0-seed-job") {
             scm {
                 git {
                     remote {
-                        url('https://github.com/kiegroup/kogito-pipelines.git')
-                        credentials('kie-ci')
+                        url('https://github.com/radtriste/kogito-pipelines.git')
+                        credentials('radtriste')
                     }
-                    branch('master')
+                    branch('setup_dsl_test')
                     extensions {
                         cleanBeforeCheckout()
                     }
