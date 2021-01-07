@@ -15,6 +15,7 @@ PIPELINES_REPO = 'kogito-pipelines'
 pipeline {
     agent {
         label 'kie-rhel7 && kie-mem4g'
+        // label 'kieci-02-docker'
     }
 
     tools {
