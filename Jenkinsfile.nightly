@@ -93,7 +93,7 @@ pipeline {
                     echo "Call ${OPTAPLANNER_DEPLOY} job"
 
                     String optaplannerBranch = ''
-                    if (getGitBranch() != 'master') {
+                    if (getGitBranch() != 'setup_dsl_test') {
                         /* The OptaPlanner major version is shifted by 7 from the Kogito major version:
                            Kogito 1.x.y -> OptaPlanner 8.x.y. */
                         int majorVersionShift = 7
