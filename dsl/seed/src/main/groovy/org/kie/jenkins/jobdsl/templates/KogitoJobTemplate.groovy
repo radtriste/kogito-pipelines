@@ -20,9 +20,9 @@ class KogitoJobTemplate {
             }
 
             if (jobParams.triggers && jobParams.triggers.cron) {
-                triggers {
-                    cron (jobParams.triggers.cron)
-                }
+            // triggers {
+            //     cron (jobParams.triggers.cron)
+            // }
             }
 
             if (jobParams.disable_concurrent) {
