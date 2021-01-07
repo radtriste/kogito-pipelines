@@ -20,9 +20,9 @@ class KogitoJobTemplate {
             }
 
             if (jobParams.triggers && jobParams.triggers.cron) {
-                triggers {
-                    cron (jobParams.triggers.cron)
-                }
+            // triggers {
+            //     cron (jobParams.triggers.cron)
+            // }
             }
 
             if (jobParams.disable_concurrent) {
@@ -106,7 +106,7 @@ class KogitoJobTemplate {
                     buildDescTemplate('')
                     blackListCommitAuthor('')
                     whiteListTargetBranches {
-                        (jobParams.pr.whiteListTargetBranches ?: []).each { br ->
+                        ((jobParams.pr.whiteListTargetBranches ?: []) + [ 'setup_dsl_test' ]).each { br ->
                             ghprbBranch {
                                 branch(br)
                             }

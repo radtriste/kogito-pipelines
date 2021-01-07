@@ -7,11 +7,11 @@ CREATE_RELEASE_BRANCHES = 'create-release-branches'
 PIPELINE_REPO = 'kogito-pipelines'
 OPTAPLANNER_REPO = 'optaplanner'
 
-PIPELINE_REPOS = ["${PIPELINE_REPO}"]
-RUNTIMES_REPOS = ['kogito-runtimes', 'kogito-apps', 'kogito-examples']
-OPTAPLANNER_REPOS = ["${OPTAPLANNER_REPO}", 'optaweb-vehicle-routing', 'optaweb-employee-rostering', 'optaplanner-quickstarts:development']
-IMAGES_REPOS = ['kogito-images']
-OPERATOR_REPOS = ['kogito-cloud-operator']
+PIPELINE_REPOS = ["${PIPELINE_REPO}:setup_dsl_test"]
+RUNTIMES_REPOS = ['kogito-runtimes:setup_dsl', 'kogito-apps:setup_dsl', 'kogito-examples:setup_dsl']
+OPTAPLANNER_REPOS = ["${OPTAPLANNER_REPO}:setup_dsl2", 'optaweb-vehicle-routing:setup_dsl2', 'optaweb-employee-rostering:setup_dsl2', 'optaplanner-quickstarts:setup_dsl2']
+IMAGES_REPOS = ['kogito-images:setup_dsl']
+OPERATOR_REPOS = ['kogito-cloud-operator:setup_dsl']
 
 JOBS = [:]
 
