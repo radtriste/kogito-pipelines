@@ -1,7 +1,5 @@
 git:
   branches:
-  - master
-  - 1.5.x
-  - 1.8.x
+  - kogito-5480
   main_branch:
-    default: master
+    default: kogito-5480
