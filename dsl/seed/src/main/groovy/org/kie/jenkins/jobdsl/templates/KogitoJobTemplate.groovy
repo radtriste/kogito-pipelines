@@ -330,6 +330,10 @@ class KogitoJobTemplate {
             jobParams.env = jobParams.env ?: [:]
             jobParams.pr = jobParams.pr ?: [:]
 
+            // TODO to remvove once tests are done
+            jobParams.git.author = 'kiegroup'
+            jobParams.git.credentials = 'kie-ci'
+
             jobParams.job.name += testTypeId ? ".${testTypeId}" : ''
             if (jobCfg.repository) { // Downstream job
                 jobParams.env.put('DOWNSTREAM_BUILD', true)
@@ -337,18 +341,20 @@ class KogitoJobTemplate {
                 jobParams.job.description = "Run ${testTypeName} tests of ${jobCfg.repository} due to changes in ${jobParams.git.repository} repository"
                 jobParams.job.name += '.downstream'
                 jobParams.git.project_url = "https://github.com/${jobParams.git.author}/${jobParams.git.repository}/"
+                jobParams.git.repo_url = Utils.createRepositoryUrl('${ghprbPullAuthorLogin}', jobCfg.repository)
                 jobParams.git.repository = jobCfg.repository
                 // If downstream repo, checkout target branch for Jenkinsfile
                 // For now there is a problem of matching when putting both branch
                 // Sometimes it takes the source, sometimes the target ...
-                jobParams.pr.checkout_branch = '${ghprbTargetBranch}'
+                jobParams.pr.checkout_branch = '${ghprbSourceBranch}'
             } else {
                 jobParams.job.description = "Run tests from ${jobParams.git.repository} repository"
             }
             jobParams.job.name += ".${jobCfg.id.toLowerCase()}"
 
             jobParams.pr.putAll([
-                commitContext: getTypedId(testTypeName, jobCfg.id)
+                commitContext: getTypedId(testTypeName, jobCfg.id),
+                run_only_for_labels: [ 'multijob-pr' ]
             ])
 
             // Setup PR triggers
