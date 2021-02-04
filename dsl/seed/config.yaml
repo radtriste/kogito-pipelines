@@ -8,6 +8,7 @@ git:
   # Each branch will be accessible as `GIT_BRANCH` env var
   branches:
   - setup_dsl_test
+  - 403.2.x
   author:
     name: radtriste
     credentials_id: radtriste
