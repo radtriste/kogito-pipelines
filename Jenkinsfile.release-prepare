@@ -4,9 +4,12 @@ import org.jenkinsci.plugins.workflow.libs.Library
 
 CREATE_RELEASE_BRANCHES = 'create-release-branches'
 
-PIPELINE_REPOS = ['kogito-pipelines:setup_dsl_test']
+PIPELINE_REPO = 'kogito-pipelines'
+OPTAPLANNER_REPO = 'optaplanner'
+
+PIPELINE_REPOS = ["${PIPELINE_REPO}:setup_dsl_test"]
 RUNTIMES_REPOS = ['kogito-runtimes:setup_dsl', 'kogito-apps:setup_dsl', 'kogito-examples:setup_dsl']
-OPTAPLANNER_REPOS = ['optaplanner:setup_dsl2', 'optaweb-vehicle-routing:setup_dsl2', 'optaweb-employee-rostering:setup_dsl2', 'optaplanner-quickstarts:setup_dsl2']
+OPTAPLANNER_REPOS = ["${OPTAPLANNER_REPO}:setup_dsl2", 'optaweb-vehicle-routing:setup_dsl2', 'optaweb-employee-rostering:setup_dsl2', 'optaplanner-quickstarts:setup_dsl2']
 IMAGES_REPOS = ['kogito-images:setup_dsl']
 OPERATOR_REPOS = ['kogito-cloud-operator:setup_dsl']
 
@@ -41,7 +44,7 @@ pipeline {
                     env.OPTAPLANNER_RELEASE_BRANCH = params.OPTAPLANNER_RELEASE_BRANCH ?: util.getReleaseBranchFromVersion(getOptaPlannerVersion())
                     echo "OptaPlanner Release Branch ${getOptaPlannerReleaseBranch()}"
 
-                    currentBuild.displayName = getDisplayName("getKogitoReleaseBranch()/getOptaPlannerReleaseBranch()")
+                    currentBuild.displayName = getDisplayName("${getKogitoReleaseBranch()}/${getOptaPlannerReleaseBranch()}")
 
                     sendNotification("Cut-off for Kogito branch ${getKogitoReleaseBranch()} and Optaplanner branch ${getOptaPlannerReleaseBranch()} has started...\n=> ${env.BUILD_URL}")
                 }
@@ -87,6 +90,37 @@ pipeline {
                 }
             }
         }
+
+        stage('Update kogito-pipelines branch config') {
+            steps {
+                script {
+                    dir('pipelines-branch') {
+                        deleteDir()
+                        checkout(githubscm.resolveRepository(PIPELINE_REPO, getGitAuthor(), getKogitoReleaseBranch(), false))
+                        sh "git checkout ${getKogitoReleaseBranch()}"
+                        
+                        repositories = []
+                        repositories.addAll(collectRepos(RUNTIMES_REPOS, getKogitoReleaseBranch()))
+                        repositories.addAll(collectRepos(IMAGES_REPOS, getKogitoReleaseBranch()))
+                        repositories.addAll(collectRepos(OPERATOR_REPOS, getKogitoReleaseBranch()))
+                        repositories.addAll(collectRepos([OPTAPLANNER_REPO]], getOptaPlannerReleaseBranch()))
+                            
+                        def branchConfig = [ dependentRepositories : repositories]
+
+                        echo "Write dsl branch_config => ${branchConfig}"
+                        writeYaml file: 'dsl/branch_config.yaml', data: branchConfig, overwrite: true
+
+                        githubscm.commitChanges('Update DSL branch config after cut-off')
+                        githubscm.pushObject('origin', getKogitoReleaseBranch(), getGitAuthorCredsId())
+                    }
+                }
+            }
+        }
+
+        // To add
+        // - update 'dsl/branch_config.yaml' on `kogito-pipelines:${getKogitoReleaseBranch()}` with the different repo/branches and push changes
+        // - create PR to update the 'dsl/seed/config.yaml' with the new ${getKogitoReleaseBranch()} branch
+        // - ideally there is a push action to seed job on master the that the jobs get updated automatically
     }
 }
 
@@ -145,6 +179,24 @@ String getGitAuthor() {
     return env.GIT_AUTHOR
 }
 
+String getGitAuthorCredsId() {
+    return env.GIT_AUTHOR_CREDS_ID
+}
+
 String getOptaPlannerReleaseBranch() {
     return env.OPTAPLANNER_RELEASE_BRANCH
+}
+
+String getRepoName(String repo) {
+    return (repo.find(':')) ? repo.split(':')[0] : repo
+}
+
+List collectRepos(List repos, String branch){
+    return repos.collect{ repoBranch -> 
+        String repo = getRepoName(repoBranch)
+        return [
+            name : repo,
+            branch : branch
+        ]
+    }
 }
