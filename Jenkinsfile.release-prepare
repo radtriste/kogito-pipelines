@@ -36,14 +36,14 @@ pipeline {
 
                     // Set release branch
                     env.RELEASE_BRANCH = util.getReleaseBranchFromVersion(getKogitoVersion())
-                    echo "Kogito Release Branch ${getReleaseBranch()}"
+                    echo "Kogito Release Branch ${getKogitoReleaseBranch()}"
 
                     env.OPTAPLANNER_RELEASE_BRANCH = params.OPTAPLANNER_RELEASE_BRANCH ?: util.getReleaseBranchFromVersion(getOptaPlannerVersion())
                     echo "OptaPlanner Release Branch ${getOptaPlannerReleaseBranch()}"
 
-                    currentBuild.displayName = getDisplayName()
+                    currentBuild.displayName = getDisplayName("getKogitoReleaseBranch()/getOptaPlannerReleaseBranch()")
 
-                    sendNotification("Release Pipeline on branch ${getReleaseBranch()} has started...\n=> ${env.BUILD_URL}")
+                    sendNotification("Cut-off for Kogito branch ${getKogitoReleaseBranch()} and Optaplanner branch ${getOptaPlannerReleaseBranch()} has started...\n=> ${env.BUILD_URL}")
                 }
             }
         }
@@ -53,7 +53,7 @@ pipeline {
                 script {
                     def buildParams = []
                     addDisplayNameParam(buildParams)
-                    addStringParam(buildParams, 'RELEASE_BRANCH', getReleaseBranch())
+                    addStringParam(buildParams, 'RELEASE_BRANCH', getKogitoReleaseBranch())
 
                     def repositories = []
                     repositories += RUNTIMES_REPOS
@@ -65,25 +65,19 @@ pipeline {
                     addStringParam(buildParams, 'REPOSITORIES', repositories.join(','))
                     buildJob(CREATE_RELEASE_BRANCHES, buildParams)
 
-                    sendNotification("${getReleaseBranch()} branches have been created for repositories: ${repositories}")
+                    sendNotification("${getKogitoReleaseBranch()} branches have been created for repositories: ${repositories}")
                 }
             }
         }
 
         stage('Create OptaPlanner release branches') {
-            when {
-                expression { return isArtifactsDeploy() }
-            }
             steps {
                 script {
                     def buildParams = []
                     addDisplayNameParam(buildParams, getDisplayName(getOptaPlannerReleaseBranch()))
                     addStringParam(buildParams, 'RELEASE_BRANCH', getOptaPlannerReleaseBranch())
 
-                    def repositories = []
-                    if (isArtifactsDeploy()) {
-                        repositories += OPTAPLANNER_REPOS
-                    }
+                    def repositories = OPTAPLANNER_REPOS
 
                     echo "Call ${CREATE_RELEASE_BRANCHES} job with repositories ${repositories}"
                     addStringParam(buildParams, 'REPOSITORIES', repositories.join(','))
@@ -119,7 +113,7 @@ void sendErrorNotification() {
 void sendNotification(String body) {
     echo 'Send Notification'
     echo body
-    emailext body: body, subject: "[${getReleaseBranch()}] Release Pipeline",
+    emailext body: body, subject: "[${getKogitoReleaseBranch()}] Cut-off Pipeline",
                 to: env.KOGITO_CI_EMAIL_TO
 }
 
@@ -132,7 +126,7 @@ void addStringParam(List params, String key, String value) {
 }
 
 String getDisplayName(branch = '') {
-    return "Cut-off ${branch ?: getReleaseBranch()}"
+    return "Cut-off ${branch ?: getKogitoReleaseBranch()}"
 }
 
 String getKogitoVersion() {
@@ -143,7 +137,7 @@ String getOptaPlannerVersion() {
     return params.OPTAPLANNER_VERSION
 }
 
-String getReleaseBranch() {
+String getKogitoReleaseBranch() {
     return env.RELEASE_BRANCH
 }
 
