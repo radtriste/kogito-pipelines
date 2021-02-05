@@ -2,13 +2,14 @@ jenkins_email_creds_id: KOGITO_CI_EMAIL_TO
 git:
   branches:
   - setup_dsl_test
+  - 603.2.x
   author:
     name: radtriste
     credentials_id: radtriste
     token_credentials_id: radtriste-gh-token
   bot_author:
     name: radtriste-bot-account
-    credentials_id: radtriste-bot  
+    credentials_id: radtriste-bot
   main_branch:
     default: setup_dsl
     kogito-pipelines: setup_dsl_test
