@@ -105,7 +105,7 @@ void setupCreateIssueToolsJob(String jobFolder) {
             stringParam('REPOSITORY', '', 'Git repository')
             stringParam('BRANCH', 'master', 'Git branch')
             stringParam('ISSUE_TITLE', '', 'Title of the issue')
-            stringParam('ISSUE_BODY', '', 'Body of the issue')
+            textParam('ISSUE_BODY', '', 'Body of the issue')
         }
         environmentVariables {
             env('GITHUB_CLI_PATH', '/opt/tools/gh-cli/bin/gh')
