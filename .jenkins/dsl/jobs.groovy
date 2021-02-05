@@ -193,8 +193,12 @@ void setupPrepareReleaseJob(String jobFolder) {
 
         environmentVariables {
             env('JENKINS_EMAIL_CREDS_ID', "${JENKINS_EMAIL_CREDS_ID}")
+
+            env('PIPELINE_MAIN_BRANCH', "${GIT_MAIN_BRANCH}")
+
             env('GIT_AUTHOR', "${GIT_AUTHOR_NAME}")
             env('GIT_AUTHOR_CREDS_ID', "${GIT_AUTHOR_CREDENTIALS_ID}")
+            env('GIT_BOT_AUTHOR_CREDS_ID', "${GIT_BOT_AUTHOR_CREDENTIALS_ID}")
         }
     }
 }
