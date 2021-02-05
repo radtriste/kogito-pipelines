@@ -2,6 +2,7 @@ jenkins_email_creds_id: KOGITO_CI_EMAIL_TO
 git:
   branches:
   - setup_dsl_test
+  - 503.2.x
   author:
     name: radtriste
     credentials_id: radtriste
