@@ -1,27 +1,19 @@
-# The configuration present here will be available as uppercase env vars for job generation
-
-##### MISC
 jenkins_email_creds_id: KOGITO_CI_EMAIL_TO
-
-##### GIT
 git:
-  # Each branch will be accessible as `GIT_BRANCH` env var
   branches:
   - setup_dsl_test
+  - 403.2.x
   author:
     name: radtriste
     credentials_id: radtriste
     token_credentials_id: radtriste-gh-token
   bot_author:
     name: radtriste-bot-account
-    credentials_id: radtriste-bot  
-  # Each main branch will be accessible as `GIT_MAIN_BRANCH` env var
+    credentials_id: radtriste-bot
   main_branch:
     default: setup_dsl
     kogito-pipelines: setup_dsl_test
     optaplanner: setup_dsl2
-
-##### MAVEN
 maven:
   settings_file_id: 2bd418aa-56fa-4403-9232-8c77a50fc528
   nexus:
@@ -30,19 +22,15 @@ maven:
     staging_profile_url: https://repository.stage.jboss.org/nexus/content/groups/kogito-public/
     staging_profile_id: 2161b7b8da0080
     build_promotion_profile_id: 1966c60aff37d
-  ## artifacts_repository Can be set if needed a different deploy repository than usual. Mostly for test purpose.
   artifacts_repository: http://nexus3-tradisso-nexus.apps.kogito-cloud.hosted.psi.rdu2.redhat.com/repository/kogito-test/
   pr_checks:
-    repository: 
-      url: 'https://bxms-qe.rhev-ci-vms.eng.rdu2.redhat.com:8443/nexus/content/repositories/kogito-runtimes-pr-full-testing/'
-      creds_id: 'unpacks-zip-on-qa-nexus'
-
-##### CLOUD
-
+    repository:
+      url: https://bxms-qe.rhev-ci-vms.eng.rdu2.redhat.com:8443/nexus/content/repositories/kogito-runtimes-pr-full-testing/
+      creds_id: unpacks-zip-on-qa-nexus
 cloud:
   image:
     registry_credentials_nightly: tradisso_registry
     registry_credentials_release: tradisso_registry
-    registry: 'quay.io'
-    namespace: 'tradisso'
+    registry: quay.io
+    namespace: tradisso
     latest_git_branch: master
