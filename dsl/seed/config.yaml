@@ -3,13 +3,14 @@ git:
   branches:
   - setup_dsl_test
   - 803.2.x
+  - 3422.5.x
   author:
     name: radtriste
     credentials_id: radtriste
     token_credentials_id: radtriste-gh-token
   bot_author:
     name: radtriste-bot-account
-    credentials_id: radtriste-bot  
+    credentials_id: radtriste-bot
   main_branch:
     default: setup_dsl
     kogito-pipelines: setup_dsl_test
