@@ -225,6 +225,9 @@ class KogitoJobTemplate {
                             msgFailure('Failure')
                             commitStatusContext('')
                         }
+                        ghprbCancelBuildsOnUpdate {
+                            overrideGlobal(true)
+                        }
                     }
                 }
             }
@@ -348,7 +351,8 @@ class KogitoJobTemplate {
             jobParams.job.name += ".${jobCfg.id.toLowerCase()}"
 
             jobParams.pr.putAll([
-                commitContext: getTypedId(testTypeName, jobCfg.id)
+                commitContext: getTypedId(testTypeName, jobCfg.id),
+                run_only_for_labels: [ KogitoConstants.KOGITO_PR_MULTIJOB_LABEL ]
             ])
 
             // Setup PR triggers
