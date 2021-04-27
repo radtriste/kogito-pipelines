@@ -5,6 +5,7 @@ git:
   - 1.4.x
   - 1.5.x
   - 1.6.x
+  - 25.999.x
   author:
     name: kiegroup
     credentials_id: kie-ci
