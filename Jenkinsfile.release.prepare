@@ -9,7 +9,7 @@ OPTAPLANNER_REPO = 'optaplanner'
 
 PIPELINE_REPOS = ["${PIPELINE_REPO}"]
 RUNTIMES_REPOS = ['kogito-runtimes', 'kogito-apps', 'kogito-examples']
-OPTAPLANNER_REPOS = ["${OPTAPLANNER_REPO}", 'optaweb-vehicle-routing', 'optaweb-employee-rostering', 'optaplanner-quickstarts:development']
+OPTAPLANNER_REPOS = ["${OPTAPLANNER_REPO}:8.5.x", 'optaweb-vehicle-routing:8.5.x', 'optaweb-employee-rostering:8.5.x', 'optaplanner-quickstarts:8.5.x']
 IMAGES_REPOS = ['kogito-images']
 OPERATOR_REPOS = ['kogito-operator', 'rhpam-kogito-operator']
 
