@@ -1,15 +1,15 @@
 dependent_repositories:
 - name: kogito-runtimes
-  branch: 1.5.x
+  branch: 250.1.x
 - name: kogito-apps
-  branch: 1.5.x
+  branch: 250.1.x
 - name: kogito-examples
-  branch: 1.5.x
+  branch: 250.1.x
 - name: kogito-images
-  branch: 1.5.x
+  branch: 250.1.x
 - name: kogito-operator
-  branch: 1.5.x
+  branch: 250.1.x
 - name: rhpam-kogito-operator
-  branch: 1.5.x
+  branch: 250.1.x
 - name: optaplanner
-  branch: 8.5.x
+  branch: 257.1.x
