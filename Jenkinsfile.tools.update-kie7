@@ -1,0 +1,33 @@
+pipeline {
+    agent { 
+        label 'kogito-cloud' 
+    }
+    options {
+        timeout(time: 120, unit: 'MINUTES')
+    }
+    environment {
+        QUAY_ACCESS_TOKEN = credentials('QUAY_ACCESS_TOKEN')
+    }
+    stages {
+        stage('Checkout repositories') {
+            steps {
+                // TODO
+            }
+        }
+        stage('Prepare for PR') {
+            steps {
+                // TODO
+            }
+        }
+        stage('Update KIE7 version on Runtimes') {
+            steps {
+                // TODO
+            }
+        }
+        stage('Update KIE7 version on Optaplanner') {
+            steps {
+                // TODO
+            }
+        }
+    }
+}
