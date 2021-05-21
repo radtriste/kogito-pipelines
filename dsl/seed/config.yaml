@@ -39,4 +39,4 @@ jenkins:
 quarkus:
   lts_version: '1.11'
 disable:
-  triggers: true
+  triggers: false
