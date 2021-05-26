@@ -322,7 +322,7 @@ class KogitoJobTemplate {
     */
     static def createMultijobPRJobs(def script, Map multijobConfig, Closure defaultParamsGetter) {
         String testTypeId = multijobConfig.testType ? multijobConfig.testType.toLowerCase() : 'tests'
-        String testTypeName = multijobConfig.testType ?: 'build'
+        String testTypeName = multijobConfig.testType ?: 'default'
         String triggerPhraseTestType = RegexUtils.getRegexMultipleCase(testTypeId)
 
         boolean parallel = multijobConfig.parallel
