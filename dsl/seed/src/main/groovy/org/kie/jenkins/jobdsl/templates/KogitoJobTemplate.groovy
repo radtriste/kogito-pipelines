@@ -225,9 +225,6 @@ class KogitoJobTemplate {
                             msgFailure('Failure')
                             commitStatusContext('')
                         }
-                        ghprbCancelBuildsOnUpdate {
-                            overrideGlobal(true)
-                        }
                     }
                 }
             }
@@ -322,7 +319,7 @@ class KogitoJobTemplate {
     */
     static def createMultijobPRJobs(def script, Map multijobConfig, Closure defaultParamsGetter) {
         String testTypeId = multijobConfig.testType ? multijobConfig.testType.toLowerCase() : 'tests'
-        String testTypeName = multijobConfig.testType ?: 'default'
+        String testTypeName = multijobConfig.testType ?: 'build'
         String triggerPhraseTestType = RegexUtils.getRegexMultipleCase(testTypeId)
 
         boolean parallel = multijobConfig.parallel
@@ -351,8 +348,7 @@ class KogitoJobTemplate {
             jobParams.job.name += ".${jobCfg.id.toLowerCase()}"
 
             jobParams.pr.putAll([
-                commitContext: getTypedId(testTypeName, jobCfg.id),
-                run_only_for_labels: [ KogitoConstants.KOGITO_PR_MULTIJOB_LABEL ]
+                commitContext: getTypedId(testTypeName, jobCfg.id)
             ])
 
             // Setup PR triggers
