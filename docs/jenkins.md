@@ -32,7 +32,7 @@
     .
     ├── 0-seed-job                   # main seed job to create other jobs. once executed, it will update it self
     ├── nightly                      # all related nightly jobs
-    │   ├── master                   # master nightly jobs
+    │   ├── main                     # main nightly jobs
     │   └── ...{RELEASE BRANCHES}    # nightly jobs related to specific release branches
     ├── pullrequest                  # all related pr jobs
     │   ├── ...
@@ -49,7 +49,7 @@ The seed job is represented by its [Jenkinsfile](../seed/../dsl/seed/Jenkinsfile
 
 To use that job, you will need to create a job in Jenkins using configuration detailed in the [job script](../dsl/seed/jobs/seed_job.groovy).
 
-**IMPORTANT: Please adapt the `author`, the `credentials` and the `branch` to your needs. You should not be generating jobs from `kiegroup/master` !**
+**IMPORTANT: Please adapt the `author`, the `credentials` and the `branch` to your needs. You should not be generating jobs from `kiegroup/main` !**
 
 ### Main configuration
 
@@ -86,7 +86,7 @@ branch=$1
 author=$2
 
 if [ -z $branch ]; then
-branch='master'
+branch='main'
 fi
 
 if [ -z $author ]; then
@@ -130,11 +130,11 @@ For example, if you are working with `kogito-images` and `kogito-operator` pipel
 * CUSTOM_REPOSITORIES=kogito-images:kogito-998756,kogito-operator:kogito-998756
 * CUSTOM_AUTHOR=<YOUR_GITHUB_AUTHOR>
 * CUSTOM_MAIN_BRANCH=kogito-998756  
-  => This will allow to generate pull requests, else it considers the main branch to be the one defined into the seed config (most of the time `master`) and does not generate those.
+  => This will allow to generate pull requests, else it considers the main branch to be the one defined into the seed config (most of the time `main`) and does not generate those.
 
-By default, in `CUSTOM_REPOSITORIES`, if you don't define any branch, `master` is taken.
+By default, in `CUSTOM_REPOSITORIES`, if you don't define any branch, `main` is taken.
 
-*NOTE: If you are testing nightly/release pipelines, you will need to set the correct `SEED_AUTHOR` and `SEED_BRANCH` because you will need specific credentials for your test. Else you can use directly the `kiegroup/master` repository.*
+*NOTE: If you are testing nightly/release pipelines, you will need to set the correct `SEED_AUTHOR` and `SEED_BRANCH` because you will need specific credentials for your test. Else you can use directly the `kiegroup/main` repository.*
 
 ### Generate all
 

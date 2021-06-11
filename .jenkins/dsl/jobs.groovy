@@ -104,7 +104,7 @@ void setupCreateIssueToolsJob(String jobFolder) {
         parameters {
             stringParam('AUTHOR', '', 'Git author')
             stringParam('REPOSITORY', '', 'Git repository')
-            stringParam('BRANCH', 'master', 'Git branch')
+            stringParam('BRANCH', 'main', 'Git branch')
             stringParam('ISSUE_TITLE', '', 'Title of the issue')
             textParam('ISSUE_BODY', '', 'Body of the issue')
         }
@@ -196,7 +196,7 @@ void setupReleaseJob(String jobFolder) {
 void setupCreateReleaseBranchJob(String jobFolder) {
     KogitoJobTemplate.createPipelineJob(this, getJobParams('create-release-branches', jobFolder, 'Jenkinsfile.release.create-branches', 'Create release branches')).with {
         parameters {
-            stringParam('REPOSITORIES', '', 'Comma-separated list of repository[:base branch] to update. The default base branch for every repository is the \'master\' branch.')
+            stringParam('REPOSITORIES', '', 'Comma-separated list of repository[:base branch] to update. The default base branch for every repository is the \'main\' branch.')
             stringParam('RELEASE_BRANCH', '', 'Release branch to create')
         }
 

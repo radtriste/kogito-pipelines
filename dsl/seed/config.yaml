@@ -1,6 +1,6 @@
 git:
   branches:
-  - master
+  - main
   - 1.5.x
   - 1.7.x
   author:
@@ -11,7 +11,7 @@ git:
     name: bsig-gh-bot
     credentials_id: bsig-gh-bot
   main_branch:
-    default: master
+    default: main
 maven:
   settings_file_id: kogito_release_settings
   nexus:
@@ -31,7 +31,7 @@ cloud:
     registry_credentials_release: release_kogito
     registry: quay.io
     namespace: kiegroup
-    latest_git_branch: master
+    latest_git_branch: main
 jenkins:
   email_creds_id: KOGITO_CI_EMAIL_TO
 quarkus:

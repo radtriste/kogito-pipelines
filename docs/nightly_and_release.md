@@ -31,7 +31,7 @@
       * [Operator Crd/Csv files](#operator-crdcsv-files)
       * [Docs release](#docs-release)
       * [Update the JIRAs](#update-the-jiras)
-      * [Update master config jobs with new release branch](#update-master-config-jobs-with-new-release-branch)
+      * [Update main config jobs with new release branch](#update-main-config-jobs-with-new-release-branch)
     * [Release pipeline Troubleshooting](#release-pipeline-troubleshooting)
       * [Release pipeline is failing](#release-pipeline-is-failing)
       * [Release pipeline is reporting a called *-deploy job is failing](#release-pipeline-is-reporting-a-called--deploy-job-is-failing)
@@ -53,16 +53,16 @@ Those jobs should be present at the same level as the nightly and/or release job
 
 Here is the list of jobs and link to Jenkinsfiles:
 
-* [kogito-runtimes-deploy](https://github.com/kiegroup/kogito-runtimes/blob/master/Jenkinsfile.deploy)
-* [kogito-runtimes-promote](https://github.com/kiegroup/kogito-runtimes/blob/master/Jenkinsfile.promote)
-* [optaplanner-deploy](https://github.com/kiegroup/optaplanner/blob/master/Jenkinsfile.deploy)
-* [optaplanner-promote](https://github.com/kiegroup/optaplanner/blob/master/Jenkinsfile.promote)
-* [kogito-examples-deploy](https://github.com/kiegroup/kogito-examples/blob/master/Jenkinsfile.deploy)
-* [kogito-examples-promote](https://github.com/kiegroup/kogito-examples/blob/master/Jenkinsfile.promote)
-* [kogito-images-deploy](https://github.com/kiegroup/kogito-images/blob/master/Jenkinsfile.deploy)
-* [kogito-images-promote](https://github.com/kiegroup/kogito-images/blob/master/Jenkinsfile.promote)
-* [kogito-operator-deploy](https://github.com/kiegroup/kogito-operator/blob/master/Jenkinsfile.deploy)
-* [kogito-operator-promote](https://github.com/kiegroup/kogito-operator/blob/master/Jenkinsfile.promote)
+* [kogito-runtimes-deploy](https://github.com/kiegroup/kogito-runtimes/blob/main/Jenkinsfile.deploy)
+* [kogito-runtimes-promote](https://github.com/kiegroup/kogito-runtimes/blob/main/Jenkinsfile.promote)
+* [optaplanner-deploy](https://github.com/kiegroup/optaplanner/blob/main/Jenkinsfile.deploy)
+* [optaplanner-promote](https://github.com/kiegroup/optaplanner/blob/main/Jenkinsfile.promote)
+* [kogito-examples-deploy](https://github.com/kiegroup/kogito-examples/blob/main/Jenkinsfile.deploy)
+* [kogito-examples-promote](https://github.com/kiegroup/kogito-examples/blob/main/Jenkinsfile.promote)
+* [kogito-images-deploy](https://github.com/kiegroup/kogito-images/blob/main/Jenkinsfile.deploy)
+* [kogito-images-promote](https://github.com/kiegroup/kogito-images/blob/main/Jenkinsfile.promote)
+* [kogito-operator-deploy](https://github.com/kiegroup/kogito-operator/blob/main/Jenkinsfile.deploy)
+* [kogito-operator-promote](https://github.com/kiegroup/kogito-operator/blob/main/Jenkinsfile.promote)
 
 ## Nightly pipeline
 
@@ -70,7 +70,7 @@ Here is the list of jobs and link to Jenkinsfiles:
 
 The Nightly Pipeline is composed of many steps, calling different other jobs to perform the build&test of runtimes/examples/images/operator as well as the deployment of jar artifacts and nightly container images.
 
-**NOTE:** The Nightly Pipeline is a multibranch pipeline job and runs on `master` and each active release branch (for example 0.15.x).
+**NOTE:** The Nightly Pipeline is a multibranch pipeline job and runs on `main` and each active release branch (for example 0.15.x).
 
 ![Flow](./images/nightly-flow.png)
 
@@ -290,14 +290,14 @@ Once pipeline is finished, you need to release docs. For that, please ask on Zul
 
 You can now close the different JIRA issues regarding the release.
 
-#### Update master config jobs with new release branch
+#### Update main config jobs with new release branch
 
 In case a new release branch has been created, you will need to update the seed job configuration to take that branch into account.  
 And also, you may need to update the release branch dsl configuration.
 
 First, **on release branch**, go to [branch configuration](../dsl/branch_config.yaml) and setup any specific configuration (for example the correct optaplanner branch).
 
-Second, **on master branch**, go to [main configuration](../dsl/seed/config.yaml) and add the new release branch to `git.branches` array.
+Second, **on main branch**, go to [main configuration](../dsl/seed/config.yaml) and add the new release branch to `git.branches` array.
 
 Once the second step is done and merged (please merge the first step before), new jobs will be generated accordingly and nightly/sonarcloud jobs should be activated.
 
@@ -312,7 +312,7 @@ In the Zulip kogito-ci stream, there should be a link to the failing job. Open i
 In case the main pipeline is failing, this will be most likely a Groovy error.  
 This can happen when changes have been made to the [Release Jenkinsfile](../Jenkinsfile.release).
 
-The problem will need to be corrected on `master` and the pipeline could be restarted.
+The problem will need to be corrected on `main` and the pipeline could be restarted.
 
 #### Release pipeline is reporting a called *-deploy job is failing
 
