@@ -2,10 +2,13 @@ package org.kie.jenkins.jobdsl
 
 enum KogitoJobType {
 
-    PR,
     NIGHTLY,
     RELEASE,
+    RUNTIMES_BDD,
     TOOLS,
-    OTHER
+    OTHER,
+
+    // Deprecated
+    PR,
 
 }

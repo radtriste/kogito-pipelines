@@ -1,9 +1,6 @@
 import org.kie.jenkins.jobdsl.templates.KogitoJobTemplate
 import org.kie.jenkins.jobdsl.KogitoConstants
-
-boolean isMainBranch() {
-    return "${GIT_BRANCH}" == "${GIT_MAIN_BRANCH}"
-}
+import org.kie.jenkins.jobdsl.Utils
 
 def getDefaultJobParams() {
     return [
@@ -20,60 +17,41 @@ def getDefaultJobParams() {
     ]
 }
 
-def getJobParams(String jobName, String jobFolder, String jenkinsfileName, String jobDescription = '') {
+def getJobParams(String jobName, String jenkinsfileName, String jobFolder = '', String jobDescription = '') {
     def jobParams = getDefaultJobParams()
     jobParams.job.name = jobName
-    jobParams.job.folder = jobFolder
     jobParams.jenkinsfile = jenkinsfileName
-    if (jobDescription) {
-        jobParams.job.description = jobDescription
-    }
+    jobParams.job.folder = jobFolder
+    jobParams.job.description = jobDescription
     return jobParams
 }
 
-def bddRuntimesPrFolder = "${KogitoConstants.KOGITO_DSL_PULLREQUEST_FOLDER}/${KogitoConstants.KOGITO_DSL_RUNTIMES_BDD_FOLDER}"
-def nightlyBranchFolder = "${KogitoConstants.KOGITO_DSL_NIGHTLY_FOLDER}/${JOB_BRANCH_FOLDER}"
-def releaseBranchFolder = "${KogitoConstants.KOGITO_DSL_RELEASE_FOLDER}/${JOB_BRANCH_FOLDER}"
-
-if ("${GIT_BRANCH}" == "${GIT_MAIN_BRANCH}") {
+if (Utils.isMainBranch()) {
     // PRs
-    folder(KogitoConstants.KOGITO_DSL_PULLREQUEST_FOLDER)
-    folder(bddRuntimesPrFolder)
-
-    setupKogitoRuntimesBDDPrJob(bddRuntimesPrFolder)
+    setupKogitoRuntimesBDDPrJob()
 
     // Tools
-    folder(KogitoConstants.KOGITO_DSL_TOOLS_FOLDER)
-
-    setupCreateIssueToolsJob(KogitoConstants.KOGITO_DSL_TOOLS_FOLDER)
-    setupCleanOldNamespacesToolsJob(KogitoConstants.KOGITO_DSL_TOOLS_FOLDER)
-    setupCleanOldNightlyImagesToolsJob(KogitoConstants.KOGITO_DSL_TOOLS_FOLDER)
+    setupCreateIssueToolsJob()
+    setupCleanOldNamespacesToolsJob()
+    setupCleanOldNightlyImagesToolsJob()
 }
 
-// Nightly
-folder(KogitoConstants.KOGITO_DSL_NIGHTLY_FOLDER)
-folder(nightlyBranchFolder)
+setupNightlyJob()
 
-setupNightlyJob(nightlyBranchFolder)
-
-folder(KogitoConstants.KOGITO_DSL_RELEASE_FOLDER)
 if (isMainBranch()) {
     // Release prepare and create branches jobs are not in a specific branch and should be generated only on main branch
-    setupCreateReleaseBranchJob(KogitoConstants.KOGITO_DSL_RELEASE_FOLDER)
-    setupPrepareReleaseJob(KogitoConstants.KOGITO_DSL_RELEASE_FOLDER)
+    setupCreateReleaseBranchJob()
+    setupPrepareReleaseJob()
 } else {
-    // No release job directly on main branch
-    folder(releaseBranchFolder)
-
-    setupReleaseJob(releaseBranchFolder)
+    setupReleaseJob()
 }
 
 /////////////////////////////////////////////////////////////////
 // Methods
 /////////////////////////////////////////////////////////////////
 
-void setupKogitoRuntimesBDDPrJob(String jobFolder) {
-    def jobParams = getJobParams('0-runtimes-bdd-testing', jobFolder, 'Jenkinsfile.pr.bdd-tests', 'Run on demand BDD tests from runtimes repository')
+void setupKogitoRuntimesBDDPrJob() {
+    def jobParams = getJobParams('0-runtimes-bdd-testing', 'Jenkinsfile.pr.bdd-tests', Utils.getBDDRuntimesFolder(), 'Run on demand BDD tests from runtimes repository')
     jobParams.git.project_url = "https://github.com/${GIT_AUTHOR_NAME}/kogito-runtimes/"
     jobParams.git.repo_url = "https://github.com/${GIT_AUTHOR_NAME}/${jobParams.git.repository}/"
     jobParams.pr = [
@@ -86,21 +64,21 @@ void setupKogitoRuntimesBDDPrJob(String jobFolder) {
     KogitoJobTemplate.createPRJob(this, jobParams)
 }
 
-void setupCleanOldNamespacesToolsJob(String jobFolder) {
-    def jobParams = getJobParams('kogito-clean-old-namespaces', jobFolder, 'Jenkinsfile.tools.clean-old-namespaces')
+void setupCleanOldNamespacesToolsJob() {
+    def jobParams = getJobParams('kogito-clean-old-namespaces', 'Jenkinsfile.tools.clean-old-namespaces')
     jobParams.triggers = [ cron : '@midnight' ]
-    KogitoJobTemplate.createPipelineJob(this, jobParams)
+    KogitoJobTemplate.createToolsJob(this, jobParams)
 }
 
-void setupCleanOldNightlyImagesToolsJob(String jobFolder) {
-    jobParams = getJobParams('kogito-clean-old-nightly-images', jobFolder, 'Jenkinsfile.tools.clean-nightly-images')
+void setupCleanOldNightlyImagesToolsJob() {
+    def jobParams = getJobParams('kogito-clean-old-nightly-images', 'Jenkinsfile.tools.clean-nightly-images')
     jobParams.triggers = [ cron : 'H 8 * * *' ]
-    KogitoJobTemplate.createPipelineJob(this, jobParams)
+    KogitoJobTemplate.createToolsJob(this, jobParams)
 }
 
-void setupCreateIssueToolsJob(String jobFolder) {
-    jobParams = getJobParams('kogito-create-issue', jobFolder, 'Jenkinsfile.tools.create-issue')
-    KogitoJobTemplate.createPipelineJob(this, jobParams).with {
+void setupCreateIssueToolsJob() {
+    def jobParams = getJobParams('kogito-create-issue', 'Jenkinsfile.tools.create-issue')
+    KogitoJobTemplate.createToolsJob(this, jobParams).with {
         parameters {
             stringParam('AUTHOR', '', 'Git author')
             stringParam('REPOSITORY', '', 'Git repository')
@@ -114,10 +92,10 @@ void setupCreateIssueToolsJob(String jobFolder) {
     }
 }
 
-void setupNightlyJob(String jobFolder) {
-    def jobParams = getJobParams('kogito-nightly', jobFolder, 'Jenkinsfile.nightly', 'Kogito Nightly')
+void setupNightlyJob() {
+    def jobParams = getJobParams('kogito-nightly', 'Jenkinsfile.nightly', '', 'Kogito Nightly')
     jobParams.triggers = [cron : '@midnight']
-    KogitoJobTemplate.createPipelineJob(this, jobParams).with {
+    KogitoJobTemplate.createNightlyJob(this, jobParams).with {
         parameters {
             booleanParam('SKIP_TESTS', false, 'Skip all tests')
 
@@ -147,11 +125,10 @@ void setupNightlyJob(String jobFolder) {
 }
 
 void setupReleaseJob(String jobFolder) {
-    KogitoJobTemplate.createPipelineJob(this, getJobParams('kogito-release', jobFolder, 'Jenkinsfile.release', 'Kogito Release')).with {
+    KogitoJobTemplate.createReleaseJob(this, getJobParams('kogito-release', 'Jenkinsfile.release', '', 'Kogito Release')).with {
         parameters {
-
             stringParam('RESTORE_FROM_PREVIOUS_JOB', '', 'URL to a previous stopped release job which needs to be continued')
-            
+
             stringParam('PROJECT_VERSION', '', 'Project version to release as Major.minor.micro')
             stringParam('KOGITO_IMAGES_VERSION', '', 'To be set if different from PROJECT_VERSION. Should be only a bug fix update from PROJECT_VERSION.')
             stringParam('KOGITO_OPERATOR_VERSION', '', 'To be set if different from PROJECT_VERSION. Should be only a bug fix update from PROJECT_VERSION.')
@@ -193,8 +170,8 @@ void setupReleaseJob(String jobFolder) {
     }
 }
 
-void setupCreateReleaseBranchJob(String jobFolder) {
-    KogitoJobTemplate.createPipelineJob(this, getJobParams('create-release-branches', jobFolder, 'Jenkinsfile.release.create-branches', 'Create release branches')).with {
+void setupCreateReleaseBranchJob() {
+    KogitoJobTemplate.createPipelineJob(this, getJobParams('create-release-branches', 'Jenkinsfile.release.create-branches', KogitoConstants.KOGITO_DSL_RELEASE_FOLDER, 'Create release branches')).with {
         parameters {
             stringParam('REPOSITORIES', '', 'Comma-separated list of repository[:base branch] to update. The default base branch for every repository is the \'master\' branch.')
             stringParam('RELEASE_BRANCH', '', 'Release branch to create')
@@ -208,8 +185,8 @@ void setupCreateReleaseBranchJob(String jobFolder) {
     }
 }
 
-void setupPrepareReleaseJob(String jobFolder) {
-    KogitoJobTemplate.createPipelineJob(this, getJobParams('prepare-release-branch', jobFolder, 'Jenkinsfile.release.prepare', 'Prepare env for a release')).with {
+void setupPrepareReleaseJob() {
+    KogitoJobTemplate.createPipelineJob(this, getJobParams('prepare-release-branch', 'Jenkinsfile.release.prepare', KogitoConstants.KOGITO_DSL_RELEASE_FOLDER, 'Prepare env for a release')).with {
         parameters {
             stringParam('KOGITO_VERSION', '', 'Project version to release as Major.minor.micro')
             stringParam('OPTAPLANNER_VERSION', '', 'Project version of OptaPlanner and its examples to release as Major.minor.micro')

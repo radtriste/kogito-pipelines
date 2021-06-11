@@ -33,6 +33,7 @@ class KogitoJobTemplate {
     *
     */
     static def createPipelineJob(def script, Map jobParams = [:]) {
+        Utils.createFolderHierarchy(script, jobParams.job.folder)
         return script.pipelineJob("${jobParams.job.folder}/${jobParams.job.name}") {
             description("""
                         ${jobParams.job.description ?: jobParams.job.name} on branch ${jobParams.git.branch}\n
@@ -425,4 +426,193 @@ class KogitoJobTemplate {
         return "(.*${RegexUtils.getRegexFirstLetterCase('jenkins')},?.*(rerun|run) ${idStr}${testType}.*)"
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    // Release/Nightly part
+    ///////////////////////////////////////////////////////////////////////////////////////
+
+    static def createNightlyJob(def script, Map jobParams) {
+        jobParams.job.folder = getFolderFromJobType(KogitoJobType.NIGHTLY)
+        return KogitoJobTemplate.createPipelineJob(script, jobParams)
+    }
+
+    static def createReleaseJob(def script, Map jobParams) {
+        jobParams.job.folder = getFolderFromJobType(KogitoJobType.RELEASE)
+        return KogitoJobTemplate.createPipelineJob(script, jobParams)
+    }
+
+    static def createBDDRuntimesJob(def script, Map jobParams) {
+        jobParams.job.folder = getFolderFromJobType(KogitoJobType.RUNTIMES_BDD)
+        return KogitoJobTemplate.createPipelineJob(script, jobParams)
+    }
+
+    static def createToolsJob(def script, Map jobParams) {
+        jobParams.job.folder = getFolderFromJobType(KogitoJobType.TOOLS)
+        return KogitoJobTemplate.createPipelineJob(script, jobParams)
+    }
+
+    static def createJobFromJobType(def script, Map jobParams, KogitoJobType jobType) {
+        def job = null
+        switch(jobType) {
+            case KogitoJobType.RUNTIMES_BDD:
+                job = createBDDRuntimesJob(script, jobParams)
+                break
+            case KogitoJobType.NIGHTLY:
+                job = createNightlyJob(script, jobParams)
+                break
+            case KogitoJobType.RELEASE:
+                job = createReleaseJob(script, jobParams)
+                break
+            case KogitoJobType.TOOLS:
+                job = createToolsJob(script, jobParams)
+            default:
+                job = null
+        }
+        return job
+    }
+
+    static def setupDeployJob(def script, Closure defaultParamsGetter) {
+        // NIGHTLY (always)
+        createDeployJob(script, getDeployParams(defaultParamsGetter), KogitoJobType.NIGHTLY)
+        if (Utils.isMainBranch()) {
+            createDeployJob(script, getDeployParams(defaultParamsGetter), KogitoJobType.RUNTIMES_BDD)
+        } else {
+            // RELEASE (if not main)
+            createDeployJob(script, getDeployParams(defaultParamsGetter), KogitoJobType.RELEASE)
+        }
+    }
+
+    static def createDeployJob(def script, KogitoJobType jobType, Closure defaultParamsGetter) {
+        Map jobParams = defaultParamsGetter()
+        jobParams.job.name = "${jobParams.git.repository}-deploy"
+        jobParams.job.description = "Deploy job for the ${jobParams.git.repository} repository"
+        jobParams.jenkinsfile = 'Jenkinsfile.deploy'
+
+        if (jobType == KogitoJobType.RUNTIMES_BDD) {
+            jobParams.git.branch = '${BUILD_BRANCH_NAME}'
+            jobParams.git.author = '${GIT_AUTHOR}'
+            jobParams.git.project_url = Utils.createProjectUrl(Utils.getBindingValue('GIT_AUTHOR_NAME'), jobParams.git.repository)
+        }
+
+        return createJobFromJobType(script, jobParams, jobType).with {
+            parameters {
+                stringParam('DISPLAY_NAME', '', 'Setup a specific build display name')
+
+                stringParam('BUILD_BRANCH_NAME', Utils.getBindingValue('GIT_BRANCH'), 'Set the Git branch to checkout')
+                if (jobType == KogitoJobType.RUNTIMES_BDD) {
+                    // author can be changed as param only for PR behavior, due to source branch/target, else it is considered as an env
+                    stringParam('GIT_AUTHOR', Utils.getBindingValue('GIT_AUTHOR_NAME'), 'Set the Git author to checkout')
+                }
+
+                // Build&test information
+                booleanParam('SKIP_TESTS', false, 'Skip tests')
+
+                // Release information
+                booleanParam('CREATE_PR', false, 'Should we create a PR with the changes ?')
+                stringParam('PROJECT_VERSION', '', 'Set the project version')
+            }
+
+            environmentVariables {
+                env('REPO_NAME', 'kogito-runtimes')
+
+                env('RELEASE', jobType == KogitoJobType.RELEASE)
+                env('JENKINS_EMAIL_CREDS_ID', Utils.getBindingValue('JENKINS_EMAIL_CREDS_ID')
+                env('MAVEN_SETTINGS_CONFIG_FILE_ID', Utils.getBindingValue('MAVEN_SETTINGS_FILE_ID'))
+
+                if (jobType == KogitoJobType.RUNTIMES_BDD) {
+                    env('MAVEN_DEPENDENCIES_REPOSITORY', Utils.getBindingValue('MAVEN_PR_CHECKS_REPOSITORY_URL'))
+                    env('MAVEN_DEPLOY_REPOSITORY', Utils.getBindingValue('MAVEN_PR_CHECKS_REPOSITORY_URL'))
+                    env('MAVEN_REPO_CREDS_ID', Utils.getBindingValue('MAVEN_PR_CHECKS_REPOSITORY_CREDS_ID'))
+            } else {
+                    env('GIT_AUTHOR', Utils.getBindingValue('GIT_AUTHOR_NAME'))
+
+                    env('AUTHOR_CREDS_ID', Utils.getBindingValue('GIT_AUTHOR_CREDENTIALS_ID'))
+                    env('GITHUB_TOKEN_CREDS_ID', Utils.getBindingValue('GIT_AUTHOR_TOKEN_CREDENTIALS_ID'))
+                    env('GIT_AUTHOR_BOT', Utils.getBindingValue('GIT_BOT_AUTHOR_NAME'))
+                    env('BOT_CREDENTIALS_ID', Utils.getBindingValue('GIT_BOT_AUTHOR_CREDENTIALS_ID'))
+
+                    env('MAVEN_DEPENDENCIES_REPOSITORY', Utils.getBindingValue('MAVEN_ARTIFACTS_REPOSITORY'))
+                    env('MAVEN_DEPLOY_REPOSITORY', Utils.getBindingValue('MAVEN_ARTIFACTS_REPOSITORY'))
+                    if (jobType == KogitoJobType.RELEASE) {
+                        env('NEXUS_RELEASE_URL', Utils.getBindingValue('MAVEN_NEXUS_RELEASE_URL'))
+                        env('NEXUS_RELEASE_REPOSITORY_ID', Utils.getBindingValue('MAVEN_NEXUS_RELEASE_REPOSITORY'))
+                        env('NEXUS_STAGING_PROFILE_ID', Utils.getBindingValue('MAVEN_NEXUS_STAGING_PROFILE_ID'))
+                        env('NEXUS_BUILD_PROMOTION_PROFILE_ID', Utils.getBindingValue('MAVEN_NEXUS_BUILD_PROMOTION_PROFILE_ID'))
+                    }
+                }
+            }
+        }
+    }
+
+    static def setupPromoteJob(def script, Closure defaultParamsGetter) {
+        // NIGHTLY (always)
+        createPromoteJob(script, getDeployParams(defaultParamsGetter), KogitoJobType.NIGHTLY)
+        if (!Utils.isMainBranch()) {
+            // RELEASE (if not main)
+            createDeployJob(script, getDeployParams(defaultParamsGetter), KogitoJobType.RELEASE)
+        }
+    }
+
+    static def createPromoteJob(def script, KogitoJobType jobType, Closure defaultParamsGetter) {
+        Map jobParams = defaultParamsGetter()
+        jobParams.job.name = "${jobParams.git.repository}-promote"
+        jobParams.job.folder = getFolderFromJobType(jobType)
+        jobParams.job.description = "Promote job for the ${jobParams.git.repository} repository"
+        jobParams.jenkinsfile = 'Jenkinsfile.promote'
+
+        return createJobFromJobType(script, jobParams, jobType).with {
+            parameters {
+                stringParam('DISPLAY_NAME', '', 'Setup a specific build display name')
+
+                stringParam('BUILD_BRANCH_NAME', Utils.getBindingValue('GIT_BRANCH'), 'Set the Git branch to checkout')
+
+                // Deploy job url to retrieve deployment.properties
+                stringParam('DEPLOY_BUILD_URL', '', 'URL to jenkins deploy build to retrieve the `deployment.properties` file.')
+
+                // Release information which can override `deployment.properties`
+                stringParam('PROJECT_VERSION', '', 'Override `deployment.properties`. Give the project version.')
+
+                stringParam('GIT_TAG', '', 'Git tag to set, if different from PROJECT_VERSION')
+            }
+
+            environmentVariables {
+                env('REPO_NAME', 'kogito-runtimes')
+                env('PROPERTIES_FILE_NAME', 'deployment.properties')
+
+                env('RELEASE', jobType == KogitoJobType.RELEASE)
+                env('JENKINS_EMAIL_CREDS_ID', Utils.getBindingValue('JENKINS_EMAIL_CREDS_ID'))
+
+                env('GIT_AUTHOR', Utils.getBindingValue('GIT_AUTHOR_NAME'))
+
+                env('AUTHOR_CREDS_ID', Utils.getBindingValue('GIT_AUTHOR_CREDENTIALS_ID'))
+                env('GITHUB_TOKEN_CREDS_ID', Utils.getBindingValue('GIT_AUTHOR_TOKEN_CREDENTIALS_ID'))
+                env('GIT_AUTHOR_BOT', Utils.getBindingValue('GIT_BOT_AUTHOR_NAME'))
+                env('BOT_CREDENTIALS_ID', Utils.getBindingValue('GIT_BOT_AUTHOR_CREDENTIALS_ID'))
+
+                env('MAVEN_SETTINGS_CONFIG_FILE_ID', Utils.getBindingValue('MAVEN_SETTINGS_FILE_ID'))
+                env('MAVEN_DEPENDENCIES_REPOSITORY', Utils.getBindingValue('MAVEN_ARTIFACTS_REPOSITORY'))
+                env('MAVEN_DEPLOY_REPOSITORY', Utils.getBindingValue('MAVEN_ARTIFACTS_REPOSITORY'))
+            }
+        }
+    }
+
+    static String getFolderFromJobType(def script, KogitoJobType jobType) {
+        String jobFolder = ''
+        switch(jobType) {
+            case KogitoJobType.RUNTIMES_BDD:
+                jobFolder = Utils.getBDDRuntimesFolder()
+                break
+            case KogitoJobType.NIGHTLY:
+                jobFolder = Utils.getNightlyFolder()
+                break
+            case KogitoJobType.RELEASE:
+                jobFolder = Utils.getReleaseFolder()
+                break
+            case KogitoJobType.TOOLS:
+                jobFolder = Utils.getToolsFolder()
+                break
+            default:
+                jobFolder = ''
+        }
+        return jobFolder
+    }
 }
