@@ -40,10 +40,6 @@ class KogitoJobTemplate {
                         Every configuration change needs to be done directly in the DSL files. See the below listed 'Seed job' for more info.\n
                     """.stripMargin())
 
-            logRotator {
-                numToKeep(10)
-            }
-
             if (jobParams.disable_concurrent) {
                 throttleConcurrentBuilds {
                     maxTotal(1)
@@ -59,6 +55,17 @@ class KogitoJobTemplate {
                             cron {
                                 spec(jobParams.triggers.cron)
                             }
+                        }
+                    }
+                }
+
+                buildDiscarder {
+                    strategy {
+                        logRotator {
+                            daysToKeepStr('')
+                            numToKeepStr('10')
+                            artifactDaysToKeepStr('')
+                            artifactNumToKeepStr('')
                         }
                     }
                 }
@@ -175,14 +182,14 @@ class KogitoJobTemplate {
                             buildDescTemplate('')
                             blackListCommitAuthor('')
                             whiteListTargetBranches {
-                                (jobParams.pr.whiteListTargetBranches ?: []).each { br ->
+                                (jobParams.pr.whiteListTargetBranches ?: ['']).each { br ->
                                     ghprbBranch {
                                         branch(br)
                                     }
                                 }
                             }
                             blackListTargetBranches {
-                                (jobParams.pr.blackListTargetBranches ?: []).each { br ->
+                                (jobParams.pr.blackListTargetBranches ?: ['']).each { br ->
                                     ghprbBranch {
                                         branch(br)
                                     }
