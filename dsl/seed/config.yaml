@@ -3,6 +3,7 @@ git:
   - master
   - 1.5.x
   - 1.8.x
+  - 1563.2.x
   author:
     name: radtriste
     credentials_id: radtriste
@@ -21,7 +22,6 @@ maven:
     staging_profile_id: 2161b7b8da0080
     build_promotion_profile_id: 1966c60aff37d
   artifacts_repository: http://nexus3-tradisso-nexus.apps.kogito-cloud.hosted.psi.rdu2.redhat.com/repository/kogito-test/
-  #artifacts_repository: ''
   pr_checks:
     repository:
       url: https://bxms-qe.rhev-ci-vms.eng.rdu2.redhat.com:8443/nexus/content/repositories/kogito-runtimes-pr-full-testing/
