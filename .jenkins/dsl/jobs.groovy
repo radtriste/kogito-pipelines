@@ -23,34 +23,23 @@ def releaseBranchFolder = "${KogitoConstants.KOGITO_DSL_RELEASE_FOLDER}/${JOB_BR
 
 if (Utils.isMainBranch(this)) {
     // PRs
-    folder(KogitoConstants.KOGITO_DSL_PULLREQUEST_FOLDER)
-    folder(bddRuntimesPrFolder)
-
     setupKogitoRuntimesBDDPrJob(bddRuntimesPrFolder)
 
     // Tools
-    folder(KogitoConstants.KOGITO_DSL_TOOLS_FOLDER)
-
     setupCreateIssueToolsJob(KogitoConstants.KOGITO_DSL_TOOLS_FOLDER)
     setupCleanOldNamespacesToolsJob(KogitoConstants.KOGITO_DSL_TOOLS_FOLDER)
     setupCleanOldNightlyImagesToolsJob(KogitoConstants.KOGITO_DSL_TOOLS_FOLDER)
 }
 
 // Nightly
-folder(KogitoConstants.KOGITO_DSL_NIGHTLY_FOLDER)
-folder(nightlyBranchFolder)
-
 setupNightlyJob(nightlyBranchFolder)
 
-folder(KogitoConstants.KOGITO_DSL_RELEASE_FOLDER)
 if (Utils.isMainBranch(this)) {
     // Release prepare and create branches jobs are not in a specific branch and should be generated only on main branch
     setupCreateReleaseBranchJob(KogitoConstants.KOGITO_DSL_RELEASE_FOLDER)
     setupPrepareReleaseJob(KogitoConstants.KOGITO_DSL_RELEASE_FOLDER)
 } else {
     // No release job directly on main branch
-    folder(releaseBranchFolder)
-
     setupReleaseJob(releaseBranchFolder)
 }
 
