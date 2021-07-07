@@ -3,6 +3,8 @@ import org.jenkinsci.plugins.workflow.libs.Library
 
 @Library('jenkins-pipeline-shared-libraries')_
 
+REPOSITORY_DSL_FOLDERS = [ '.jenkins/dsl', '.ci/jenkins/dsl' ]
+
 seedConfig = [:]
 seedEnvProperties = [:]
 customBranchConfig = [:] // Used for the custom configuration
@@ -27,8 +29,6 @@ pipeline {
     // }
 
     environment {
-        REPOSITORY_DSL_FOLDERS = [ '.jenkins/dsl', '.ci/jenkins/dsl' ]
-
         SEED_FOLDER = 'seed'
         DSL_SEED_FOLDER = "${WORKSPACE}/dsl/${SEED_FOLDER}"
         DSL_BRANCH_CONFIG_FILE = 'dsl/branch_config.yaml'
