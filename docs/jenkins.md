@@ -1,9 +1,11 @@
 # Jenkins Jobs
 
 * [Jenkins Jobs](#jenkins-jobs)
+  * [Structure](#structure)
+    * [Seed job structure](#seed-job-structure)
   * [Folder Structure](#folder-structure)
   * [Generated jobs structure](#generated-jobs-structure)
-  * [Seed Job](#seed-job)
+  * [Seed Jobs](#seed-jobs)
     * [Main configuration](#main-configuration)
       * [Branch configuration](#branch-configuration)
     * [Seed job testing](#seed-job-testing)
@@ -12,20 +14,28 @@
     * [Generate only specific repositories](#generate-only-specific-repositories)
     * [Generate all](#generate-all)
 
+We use [Jenkins Job DSL](https://github.com/jenkinsci/job-dsl-plugin) to create the different Kogito jobs
+
+## Structure
+
+### Seed job structure
+
 ## Folder Structure
 
     .
     ├── .jenkins                # repository jenkins folder
     │   ├── dsl                 # dsl script files to generate jobs for the repository
-    │   │   ├── jobs            # contains the jobs for the current branch to be generated
+    │   │   ├── Jenkinsfile.seed # Main entry point for generation of the jobs
+    │   │   ├── jobs.groovy     # contains the jobs for the current branch to be generated
     │   │   └── scripts         # scripts for dsl jobs
     │   └── tests               # tests for Jenkinsfiles
     ├── dsl                     # main folder for seed job generation and configuration of Kogito jobs
     │   ├── seed                # contains all information and configuration of the seed job
     │   │   └── src/main/*      # common classes which can be reused into the different groovy scripts for jobs generation
     │   │   └── src/test/*      # test classes to check groovy script are well formed
-    │   │   └── config.yaml     # main configuration for the whole seed job
-    │   └── branch_config.yaml  # jobs configuration for the current branch
+    │   └── config
+    │   │   └── main.yaml       # main configuration for the whole seed job
+    │   │   └── branch.yaml     # jobs configuration for the current branch
 
 ## Generated jobs structure
 
@@ -43,7 +53,7 @@
     │   └── ...{RELEASE BRANCHES}    # release jobs related to specific release branches
     └── tools                        # tools jobs
 
-## Seed Job
+## Seed Jobs
 
 The seed job is represented by its [Jenkinsfile](../seed/../dsl/seed/Jenkinsfile.seed) and its [job script](../dsl/seed/jobs/seed_job.groovy).
 
