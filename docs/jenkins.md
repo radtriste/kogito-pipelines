@@ -24,8 +24,9 @@
     │   ├── seed                # contains all information and configuration of the seed job
     │   │   └── src/main/*      # common classes which can be reused into the different groovy scripts for jobs generation
     │   │   └── src/test/*      # test classes to check groovy script are well formed
-    │   │   └── config.yaml     # main configuration for the whole seed job
-    │   └── branch_config.yaml  # jobs configuration for the current branch
+    │   └── config
+    │   │   └── main.yaml       # main configuration for the whole seed job
+    │   │   └── branch.yaml     # jobs configuration for the current branch
 
 ## Generated jobs structure
 

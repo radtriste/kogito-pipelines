@@ -31,7 +31,7 @@ pipeline {
 
         SEED_FOLDER = 'seed'
         DSL_SEED_FOLDER = "${WORKSPACE}/dsl/${SEED_FOLDER}"
-        DSL_BRANCH_CONFIG_FILE = 'dsl/branch_config.yaml'
+        DSL_BRANCH_CONFIG_FILE = 'dsl/seed/config/branch.yaml'
     }
 
     stages {
