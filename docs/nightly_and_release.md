@@ -295,9 +295,9 @@ You can now close the different JIRA issues regarding the release.
 In case a new release branch has been created, you will need to update the seed job configuration to take that branch into account.  
 And also, you may need to update the release branch dsl configuration.
 
-First, **on release branch**, go to [branch configuration](../dsl/branch_config.yaml) and setup any specific configuration (for example the correct optaplanner branch).
+First, **on release branch**, go to [branch configuration](../dsl/seed/config/branch.yaml) and setup any specific configuration (for example the correct optaplanner branch).
 
-Second, **on master branch**, go to [main configuration](../dsl/seed/config.yaml) and add the new release branch to `git.branches` array.
+Second, **on master branch**, go to [main configuration](../dsl/seed/config/main.yaml) and add the new release branch to `git.branches` array.
 
 Once the second step is done and merged (please merge the first step before), new jobs will be generated accordingly and nightly/sonarcloud jobs should be activated.
 
