@@ -3,7 +3,9 @@ SEED_FOLDER = 'dsl/seed'
 util = null
 
 def generate() {
-    node('kie-rhel7 && kie-mem4g') {
+    // TODO set back
+    // node('kie-rhel7 && kie-mem4g') {
+    node {
         stage('Initialize') {
             checkout scm
 
@@ -22,16 +24,17 @@ def generate() {
             """
         }
 
-        stage('Test jobs') {
-            dir("${SEED_REPO}/${SEED_FOLDER}") {
-                try {
-                    sh './gradlew clean test'
-                } finally {
-                    junit 'build/test-results/**/*.xml'
-                    archiveArtifacts 'build/reports/**'
-                }
-            }
-        }
+        // TODO set back
+        // stage('Test jobs') {
+        //     dir("${SEED_REPO}/${SEED_FOLDER}") {
+        //         try {
+        //             sh './gradlew clean test'
+        //         } finally {
+        //             junit 'build/test-results/**/*.xml'
+        //             archiveArtifacts 'build/reports/**'
+        //         }
+        //     }
+        // }
 
         stage('Generate jobs') {
             def envProps = getRepoEnvProperties()
@@ -49,16 +52,17 @@ def generate() {
                         println "[DEBUG] ${it.key} = ${it.value}"
                     }
                 }
-                jobDsl targets: "jobs/jobs.groovy",
-                    sandbox: false,
-                    ignoreExisting: false,
-                    ignoreMissingFiles: false,
-                    removedJobAction: 'IGNORE',
-                    removedViewAction: 'IGNORE',
-                    //removedConfigFilesAction: 'IGNORE',
-                    lookupStrategy: 'SEED_JOB',
-                    additionalClasspath: 'src/main/groovy',
-                    additionalParameters : envProps
+                // TODO set back
+                // jobDsl targets: "jobs/jobs.groovy",
+                //     sandbox: false,
+                //     ignoreExisting: false,
+                //     ignoreMissingFiles: false,
+                //     removedJobAction: 'IGNORE',
+                //     removedViewAction: 'IGNORE',
+                //     //removedConfigFilesAction: 'IGNORE',
+                //     lookupStrategy: 'SEED_JOB',
+                //     additionalClasspath: 'src/main/groovy',
+                //     additionalParameters : envProps
             }
         }
     }
