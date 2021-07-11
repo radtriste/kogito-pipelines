@@ -13,7 +13,7 @@ boolean isDebug() {
 }
 
 Map parseCustomRepositories(String customRepositoriesParam) {
-    if(customRepositoriesParam) {
+    if (customRepositoriesParam) {
         List repoBranches =  customRepositoriesParam.split(',') as List
         return repoBranches.collectEntries { repoBranch ->
             repoBranchSplit = repoBranch.split(':') as List
@@ -28,7 +28,7 @@ Map parseCustomRepositories(String customRepositoriesParam) {
                 }
             }
             return [ (repo), branch ]
-        }   
+        }
     }
     return [:]
 }
@@ -56,6 +56,10 @@ def getRepoConfig(String repository, String generationBranch) {
         cfg.git.bot_author.name = repoConfig.bot_author.name ?: cfg.git.bot_author.name
         cfg.git.bot_author.credentials_id = repoConfig.bot_author.credentials_id ?: cfg.git.bot_author.credentials_id
     }
+    if (isDebug()) {
+        println "[DEBUG] Repo config:"
+        println "[DEBUG] ${cfg}"
+    }
     return cfg
 }
 
@@ -75,6 +79,10 @@ def readBranchConfig() {
             }
             branchConfig.repositories.add(cfg)
         }
+    }
+    if (isDebug()) {
+        println '[DEBUG] Branch config:'
+        println "[DEBUG] ${branchConfig}"
     }
     return branchConfig
 }

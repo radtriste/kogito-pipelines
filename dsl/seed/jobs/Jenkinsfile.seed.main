@@ -35,11 +35,6 @@ pipeline {
 
                     def seedConfig = readSeedConfig()
 
-                    if (util.isDebug()) {
-                        println '[DEBUG] Yaml config used:'
-                        echo "${seedConfig}"
-                    }
-
                     echo "${currentBuild.changeSets}"
 
                     currentBuild.displayName = getCustomBranchKey() ?: 'Global build'
@@ -66,7 +61,6 @@ pipeline {
                                     additionalClasspath: 'src/main/groovy',
                                     additionalParameters : [
                                         JOB_NAME: getBranchSeedJobName(branch),
-                                        DEBUG: "${DEBUG}",
                                         GENERATION_BRANCH: branch,
                                         MAIN_BRANCHES: writeJSON(json: seedConfig.git.main_branch, returnText: true),
                                         CUSTOM_REPOSITORIES: "${CUSTOM_REPOSITORIES}",

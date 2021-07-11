@@ -3,9 +3,7 @@ SEED_FOLDER = 'dsl/seed'
 util = null
 
 def generate() {
-    // TODO set back
-    // node('kie-rhel7 && kie-mem4g') {
-    node {
+    node('kie-rhel7 && kie-mem4g') {
         stage('Initialize') {
             checkout scm
 
@@ -24,17 +22,16 @@ def generate() {
             """
         }
 
-        // TODO set back
-        // stage('Test jobs') {
-        //     dir("${SEED_REPO}/${SEED_FOLDER}") {
-        //         try {
-        //             sh './gradlew clean test'
-        //         } finally {
-        //             junit 'build/test-results/**/*.xml'
-        //             archiveArtifacts 'build/reports/**'
-        //         }
-        //     }
-        // }
+        stage('Test jobs') {
+            dir("${SEED_REPO}/${SEED_FOLDER}") {
+                try {
+                    sh './gradlew clean test'
+                } finally {
+                    junit 'build/test-results/**/*.xml'
+                    archiveArtifacts 'build/reports/**'
+                }
+            }
+        }
 
         stage('Generate jobs') {
             def envProps = getRepoEnvProperties()
@@ -44,36 +41,43 @@ def generate() {
             envProps.each {
                 echo "${it.key} = ${it.value}"
             }
-            dir("${SEED_REPO}/${SEED_FOLDER}") {
-                println "[INFO] Generate jobs for branch ${seedBranch} and repo ${repoName}."
-                if (util.isDebug()) {
-                    println "[DEBUG] Environment properties:"
-                    envProps.each {
-                        println "[DEBUG] ${it.key} = ${it.value}"
-                    }
+            if (util.isDebug()) {
+                println '[DEBUG] Modified environment properties:'
+                envProps.each {
+                    println "[DEBUG] ${it.key} = ${it.value}"
                 }
-                // TODO set back
-                // jobDsl targets: "jobs/jobs.groovy",
-                //     sandbox: false,
-                //     ignoreExisting: false,
-                //     ignoreMissingFiles: false,
-                //     removedJobAction: 'IGNORE',
-                //     removedViewAction: 'IGNORE',
-                //     //removedConfigFilesAction: 'IGNORE',
-                //     lookupStrategy: 'SEED_JOB',
-                //     additionalClasspath: 'src/main/groovy',
-                //     additionalParameters : envProps
+            }
+            dir("${SEED_REPO}/${SEED_FOLDER}") {
+                println "[INFO] Generate jobs for branch ${GENERATION_BRANCH} and repo ${REPO_NAME}."
+            jobDsl targets: "jobs/jobs.groovy",
+                sandbox: false,
+                ignoreExisting: false,
+                ignoreMissingFiles: false,
+                removedJobAction: 'IGNORE',
+                removedViewAction: 'IGNORE',
+                //removedConfigFilesAction: 'IGNORE',
+                lookupStrategy: 'SEED_JOB',
+                additionalClasspath: 'src/main/groovy',
+                additionalParameters : envProps
             }
         }
     }
-}
+    }
 
 def getRepoConfig() {
     def cfg = util.getRepoConfig("${REPO_NAME}", "${GENERATION_BRANCH}")
 
+    String author = "${GIT_AUTHOR}"
+    String branch = "${GIT_BRANCH}"
+
     // Override with data from environment
-    cfg.git.branch = "${GIT_BRANCH}"
-    cfg.git.author.name = "${GIT_AUTHOR}"
+    cfg.git.branch = branch
+    cfg.git.author.name = author
+
+    if (util.isDebug()) {
+        println '[DEBUG] Modified repo config:'
+        println "[DEBUG] ${cfg}"
+    }
 
     return cfg
 }
@@ -81,21 +85,28 @@ def getRepoConfig() {
 def getRepoEnvProperties() {
     Map envProperties = [:]
     fillEnvProperties(envProperties, '', getRepoConfig())
+    if (util.isDebug()) {
+        println '[DEBUG] Environment properties:'
+        envProperties.each {
+            println "[DEBUG] ${it.key} = ${it.value}"
+        }
+    }
     return envProperties
 }
 
 void fillEnvProperties(Map envProperties, String envKeyPrefix, Map propsMap) {
-    propsMap.each { key, value ->
-        String newKey = generateEnvKey(envKeyPrefix, key)
+    propsMap.each { it ->
+        String newKey = generateEnvKey(envKeyPrefix, it.key)
+        def value = it.value
         if (util.isDebug()) {
-            println "[DEBUG] Setting key ${newKey}"
+            println "[DEBUG] Setting key ${newKey} and value ${value}"
         }
         if (value instanceof Map) {
             fillEnvProperties(envProperties, newKey, value as Map)
         } else if (value instanceof List) {
-            envProperties[newKey] = (value as List).join(',')
+            envProperties.put(newKey, (value as List).join(','))
         } else {
-            envProperties[newKey] = value
+            envProperties.put(newKey, value)
         }
     }
 }

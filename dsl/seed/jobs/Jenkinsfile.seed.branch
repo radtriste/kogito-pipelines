@@ -32,11 +32,6 @@ pipeline {
                     util = load 'dsl/seed/jobs/scripts/util.groovy'
 
                     // TODO if not manual launch, check branch and changesets in (dsl but NOT dsl/seed/config.yaml)
-
-                    if (util.isDebug()) {
-                        println '[DEBUG] Yaml branch config used:'
-                        echo "${util.readBranchConfig()}"
-                    }
                 }
             }
         }
@@ -61,7 +56,6 @@ pipeline {
                                             JOB_NAME: getRepoBranchSeedJobName(repository),
 
                                             // Params propagation
-                                            DEBUG: "${DEBUG}",
                                             SEED_AUTHOR: "${SEED_AUTHOR}",
                                             SEED_BRANCH: "${SEED_BRANCH}",
 
