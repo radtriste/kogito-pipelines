@@ -43,6 +43,12 @@ def generate() {
             }
             dir("${SEED_REPO}/${SEED_FOLDER}") {
                 println "[INFO] Generate jobs for branch ${seedBranch} and repo ${repoName}."
+                if (util.isDebug()) {
+                    println "[DEBUG] Environment properties:"
+                    envProps.each {
+                        println "[DEBUG] ${it.key} = ${it.value}"
+                    }
+                }
                 jobDsl targets: "jobs/jobs.groovy",
                     sandbox: false,
                     ignoreExisting: false,
