@@ -4,7 +4,7 @@ class JenkinsfileSeed extends JenkinsPipelineSpecification {
 	
 	def '[Jenkinsfile.seed] test load script' () {
 		when:
-			def Jenkinsfile = loadPipelineScriptForTest('Jenkinsfile.seed')
+			def Jenkinsfile = loadPipelineScriptForTest('Jenkinsfile.seed.main')
 		then:
 			Jenkinsfile != null
 	}
