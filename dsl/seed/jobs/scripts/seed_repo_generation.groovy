@@ -87,7 +87,7 @@ def getRepoEnvProperties() {
 void fillEnvProperties(Map envProperties, String envKeyPrefix, Map propsMap) {
     propsMap.each { key, value ->
         String newKey = generateEnvKey(envKeyPrefix, key)
-        if (isDebug()) {
+        if (util.isDebug()) {
             println "[DEBUG] Setting key ${newKey}"
         }
         if (value instanceof Map) {
