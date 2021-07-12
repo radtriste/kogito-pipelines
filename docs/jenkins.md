@@ -84,8 +84,8 @@ $ cd dsl/seed && ./gradlew test
 
 ## Jobs configuration in a repository
 
-As shown in `.jenkins` folder, groovy scripts to generate jobs should be in `.jenkins/dsl/jobs` or `.ci/jenkins/dsl/jobs` directory.  
-Then, you can also add a small `.jenkins/dsl/test.sh` or `.ci/jenkins/dsl/test.sh` to test your groovy script:
+As shown in `.jenkins` folder, groovy scripts to generate jobs should be in `.ci/jenkins/dsl/jobs` directory.  
+Then, you can also add a small `.ci/jenkins/dsl/test.sh` to test your groovy script:
 
 ```bash
 #!/bin/bash -e
@@ -115,8 +115,8 @@ The script clones the `kogito-pipelines` repository and then call the `seed_test
 Then you can call the script:
 
 ```bash
-$ chmod u+x .jenkins/dsl/test.sh
-$ cd .jenkins/dsl && ./scripts/test.sh
+$ chmod u+x .ci/jenkins/dsl/test.sh
+$ cd .ci/jenkins/dsl && ./scripts/test.sh
 ```
 
 *NOTE: Your Jenkinsfiles can be stored anywhere in the repository. The reference is anyway done in the job script, so you can put whatever you want if needed. One good practise would be to store it at the root of the project or in the `.jenkins` folder.*
