@@ -38,9 +38,12 @@ def generate() {
             envProps.put('JOB_BRANCH_FOLDER', "${GENERATION_BRANCH}")
             envProps.put('GIT_MAIN_BRANCH', "${GIT_MAIN_BRANCH}")
 
-            envProps.each {
-                echo "${it.key} = ${it.value}"
+            // Add other repos `jenkins_config_path` var (useful if multijob PR checks for example)
+            getAllBranchRepos().each { repoName ->
+                String key = generateEnvKey(repoName, 'jenkins_config_path')
+                envProps.put(key, getRepoConfig(repoName).git.jenkins_config_path)
             }
+
             if (util.isDebug()) {
                 println '[DEBUG] Modified environment properties:'
                 envProps.each {
@@ -49,7 +52,7 @@ def generate() {
             }
             dir("${SEED_REPO}/${SEED_FOLDER}") {
                 println "[INFO] Generate jobs for branch ${GENERATION_BRANCH} and repo ${REPO_NAME}."
-            jobDsl targets: "jobs/jobs.groovy",
+                jobDsl targets: 'jobs/jobs.groovy',
                 sandbox: false,
                 ignoreExisting: false,
                 ignoreMissingFiles: false,
@@ -62,10 +65,10 @@ def generate() {
             }
         }
     }
-    }
+}
 
-def getRepoConfig() {
-    def cfg = util.getRepoConfig("${REPO_NAME}", "${GENERATION_BRANCH}", "${SEED_REPO}")
+def getRepoConfig(String repoName = "${REPO_NAME}") {
+    def cfg = util.getRepoConfig(repoName, "${GENERATION_BRANCH}", "${SEED_REPO}")
 
     String author = "${GIT_AUTHOR}"
     String branch = "${GIT_BRANCH}"
@@ -113,6 +116,10 @@ void fillEnvProperties(Map envProperties, String envKeyPrefix, Map propsMap) {
 
 String generateEnvKey(String envKeyPrefix, String key) {
     return (envKeyPrefix ? "${envKeyPrefix}_${key}" : key).toUpperCase()
+}
+
+List getAllBranchRepos() {
+    return util.readBranchConfig("${SEED_REPO}").repositories.collect { it.name }
 }
 
 return this
