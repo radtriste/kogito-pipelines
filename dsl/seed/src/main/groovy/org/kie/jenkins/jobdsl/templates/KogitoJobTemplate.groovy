@@ -150,7 +150,7 @@ class KogitoJobTemplate {
                             }
                         }
                     }
-                    scriptPath("${jobParams.jenkinsfile ?: 'Jenkinsfile'}")
+                    scriptPath("${jobParams.jenkinsfile ?: '.ci/jenkins/Jenkinsfile'}")
                 }
             }
 
@@ -347,8 +347,11 @@ class KogitoJobTemplate {
             jobParams.job.name += ".${jobCfg.id.toLowerCase()}"
 
             // Update jenkinsfile path
+            String defaultJenkinsConfigPath = Utils.getJenkinsConfigPath(jobCfg.repository)
             if (jobCfg.jenkinsfile) {
                 jobParams.jenkinsfile = jobCfg.jenkinsfile
+            } else if (defaultJenkinsConfigPath) {
+                jobParams.jenkinsfile = "${defaultJenkinsConfigPath}/Jenkinsfile"
             }
 
             jobParams.pr.putAll([
